@@ -2,7 +2,7 @@
 
 # Simple Node JS api with JWT and Mongoose authentication
 
-`:wave:`
+:wave:
 
 ## Start 
 
