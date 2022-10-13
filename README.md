@@ -1,6 +1,9 @@
 # Lehoax-nodejs-authentification-api
 
 ![alt text](https://img.shields.io/github/languages/code-size/Lehoax/Lehoax-nodejs-authentification-api)
+![alt text]([https://img.shields.io/github/languages/code-size/Lehoax/Lehoax-nodejs-authentification-api](https://img.shields.io/github/last-commit/Lehoax/Lehoax-nodejs-authentification-api/main
+))
+
 
 # Simple Node JS api with JWT and Mongoose authentication
 
