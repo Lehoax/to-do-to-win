@@ -1,24 +1,38 @@
 {
-  "name": "nodejs-authentification-api",
+  "name": "to-do-to-win",
   "version": "1.0.0",
-  "description": "",
+  "description": "![alt text](https://img.shields.io/github/languages/code-size/Lehoax/Lehoax-nodejs-authentification-api)\r ![alt text](https://img.shields.io/github/last-commit/Lehoax/Lehoax-nodejs-authentification-api/main)",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"
   },
-  "author": "",
+  "author": "Lehoax",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.6.5",
     "mongoose-unique-validator": "^3.1.0"
   },
   "devDependencies": {
     "axios": "^1.1.2",
-    "nodemon": "^2.0.20"
-  }
+    "nodemon": "^3.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lehoax/to-do-to-win.git"
+  },
+  "keywords": [
+    "to",
+    "do",
+    "list",
+    "game"
+  ],
+  "bugs": {
+    "url": "https://github.com/Lehoax/to-do-to-win/issues"
+  },
+  "homepage": "https://github.com/Lehoax/to-do-to-win#readme"
 }

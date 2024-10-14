@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+mongoose.set('strictQuery', false);
 
 const users_routes = require('./routes/user')
 const authenticateToken = require('./middleware/auth');
