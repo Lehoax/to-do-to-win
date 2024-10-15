@@ -7,7 +7,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 mongoose.set('strictQuery', false);
 
-const users_routes = require('./routes/user')
+const users_routes = require('./routes/user');
+const task_routes = require('./routes/task');
 const authenticateToken = require('./middleware/auth');
 
 mongoose.connect('mongodb+srv://'+process.env.DB_ACCESS+':'+process.env.DB_PASSWORD+'@cluster0.aoxy6.mongodb.net/?retryWrites=true&w=majority',
@@ -17,10 +18,12 @@ mongoose.connect('mongodb+srv://'+process.env.DB_ACCESS+':'+process.env.DB_PASSW
   .catch(() => console.log('Connection to MongoDB failed !'));
 
 
-app.listen(3000, () => {console.log('Server running on port 3000');})
+app.listen(3000, () => {console.log('Server running on port 3000');});
 
 
 app.use('/api/user', users_routes);
+app.use('/api/task', task_routes);
+
 
 
 app.get('/api/me', authenticateToken, (req, res) =>{

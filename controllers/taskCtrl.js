@@ -3,13 +3,12 @@ const User = require('../models/User');
 
 exports.newTask = (req, res, next) => {
     const task = new Task({
-        title: req.body.task,
+        title: req.body.title,
         description: req.body.description,
         xp: req.body.xp,
     })
-    User.find({ email: req.body.email})
-    .then(user =>{
-        user.updateOne({ $addToSet: { task: task } })
-        return res.status(200).json({ message: 'task create'});
-    })
+        User.findOneAndUpdate({email: req.body.email} , {$push: { task: task }})
+        .then(user =>{
+            return res.status(200).json({ message: 'task create'});
+        })        
 }
