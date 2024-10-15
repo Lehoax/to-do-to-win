@@ -71,7 +71,7 @@ exports.refreshToken = (req, res, next) => {
     });
 }
 exports.profile = (req, res, next) => {
- const user = req.body.userSearchByEmail;
+ const user = req.body.email;
  User.findOne({ email: user }, '_id email')
         .then(user =>{
             if (!user) {
@@ -82,9 +82,21 @@ exports.profile = (req, res, next) => {
               user: user
             });
         })
-    
 };
-
+exports.myxp = (req, res, next) => {
+  const user = req.body.email;
+  User.findOne({ email: user }, 'xp')
+         .then(user =>{
+             if (!user) {
+                 return res.status(401).json({ message: 'this user does not exist'});
+             }
+             delete user.password;
+             res.send({
+               user: user
+             });
+         })
+ };
+ 
 exports.allUsers = (req, res, next) => {
   User.find({ }, '_id email')
          .then(users =>{
