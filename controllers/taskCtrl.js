@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const Task = require('../models/Task');
 const User = require('../models/User');
 
@@ -34,54 +35,48 @@ exports.taskToDo = (req, res, next) => {
       });
        
 }
-
-exports.taskToDo = (req, res, next) => {
-    User.findOne(
-        { email: req.body.email },  
-        {
-          task: { 
-            $filter: {
-              input: "$task",
-              as: "task",
-              cond: { $eq: ["$$task.done", false] }
-            }
-          }
-        }
-      )
-      .then(result => {
-        res.status(200).json(result);
-      })
-      .catch(error => {
-        res.status(400).json({ error });
-      });
-       
-}   
-
 exports.taskDone = (req, res, next) => {
-    console.log("Email reçu : ", req.body.email);  // Log pour vérifier l'email
+    console.log("Email reçu : ", req.body.email);
+    console.log("ID de la tâche reçu : ", req.body.taskId);
   
-    User.findOne({ email: req.body.email }) // Cherche l'utilisateur par email
-      .then(result => {
-        if (result) {  
-          // Mettre à jour la tâche spécifique
-          const taskIndex = result.task.findIndex(t => t._id.toString() === req.body.taskId); // Trouver l'index de la tâche
-          if (taskIndex !== -1) {
-            result.task[taskIndex].done = true; // Met à jour le champ "done"
-            return result.save(); // Sauvegarde l'utilisateur avec la tâche mise à jour
-          } else {
-            return Promise.reject({ message: "Tâche non trouvée" }); // Si la tâche n'est pas trouvée
-          }
+    // Cherche l'utilisateur et la tâche à mettre à jour
+    User.findOneAndUpdate(
+      { email: req.body.email, "task._id": mongoose.Types.ObjectId(req.body.taskId) }, // Condition de recherche
+      { $set: { "task.$.done": true } }, // Met à jour le statut de la tâche
+      { new: true } // Retourne le document mis à jour
+    )
+    .then(updatedUser => {
+      if (updatedUser) {
+        const updatedTask = updatedUser.task.find(t => t._id.toString() === req.body.taskId); // Trouver la tâche mise à jour
+  
+        if (updatedTask) {
+          // Ajoute l'xp de la tâche à l'utilisateur
+          const newXp = updatedUser.xp + updatedTask.xp;
+  
+          // Met à jour l'utilisateur avec le nouvel xp
+          User.findByIdAndUpdate(
+            updatedUser._id,
+            { xp: newXp },
+            { new: true }
+          )
+          .then(finalUser => {
+            if (finalUser) {
+              res.status(200).json({ task: updatedTask, userXp: finalUser.xp }); // Retourner la tâche mise à jour et le nouvel xp
+            } else {
+              res.status(404).json({ message: "Utilisateur non trouvé lors de la mise à jour de l'XP" });
+            }
+          })
+          .catch(error => {
+            res.status(400).json({ error });
+          });
         } else {
-          return Promise.reject({ message: "Utilisateur non trouvé" }); // Si l'utilisateur n'est pas trouvé
+          res.status(404).json({ message: "Tâche non trouvée" });
         }
-      })
-      .then(updatedUser => {
-        // Trouver la tâche mise à jour dans le tableau des tâches
-        const updatedTask = updatedUser.task.find(t => t.done === true && t._id.toString() === req.body.taskId);
-        res.status(200).json(updatedTask); // Retourner la tâche mise à jour
-      })
-      .catch(error => {
-        console.error("Erreur de requête :", error);  // Log de l'erreur
-        res.status(404).json(error); // Retourner l'erreur avec un statut 404
-      });
+      } else {
+        res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+    })
+    .catch(error => {
+      res.status(400).json({ error }); // Retourner l'erreur avec un statut 400
+    });
   };
