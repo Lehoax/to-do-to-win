@@ -6,6 +6,8 @@ const auth = require('../middleware/auth')
 
 router.post('/newtask',auth ,taskCtrl.newTask)
 router.post('/seetask',auth ,taskCtrl.taskToDo)
+router.post('/donetask',auth ,taskCtrl.taskDone)
+
 
 
 
