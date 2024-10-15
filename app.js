@@ -26,5 +26,3 @@ app.use('/api/user', users_routes);
 app.get('/api/me', authenticateToken, (req, res) =>{
   res.send(req.user);
 });
-
-

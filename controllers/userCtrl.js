@@ -31,11 +31,13 @@ exports.login = (req, res, next) => {
                 if (!valid) {
                     return res.status(401).json({ message: 'incorrect login/password' });
                 }
+                User.updateOne({ email: req.body.email }, {last_connection: Date.now()})
+                .then(() => 
                 res.status(200).json({
                     userId: user._id,
                     token: token,
                     refreshToken: refreshToken
-                });
+                }));
             })
             .catch(error => res.status(500).json({ error }));
     })
