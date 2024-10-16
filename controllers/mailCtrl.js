@@ -1,27 +1,19 @@
-const env = require('dotenv').config()
 var nodemailer = require('nodemailer');
+const transporter = require('../helpers/transporter');
+const path = require('path');
+const ejs = require('ejs');
 
-
-const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    
-    auth: {
-      user: env.parsed.USER_MAIL,
-      pass: env.parsed.PASS_MAIL,
-    },
-  });
-
-  // Configure the mailoptions object
-const mailOptions = {
-    from: 'leolair.pro@gmail.com',
-    to: 'leolair.pro@gmail.com',
-    subject: 'Sending Email using Node.js',
-    text: 'That was easy!'
-  };
-  
+exports.welcome = (email) => {
+  ejs.renderFile(path.join(__dirname + "/../", "views", "welcome.ejs"), { receiver: email }, function (err, data) {
+    if (err) {
+        console.log(err);
+    } else {
+        var mailOptions = {
+            from: '"Admin" testmail@zoho.com',
+            to: email,
+            subject: 'bienvenue chez to do to win',
+            html: data
+        };
   // Send the email
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
@@ -30,3 +22,6 @@ const mailOptions = {
       console.log('Email sent: ', info.response);
     }
   });
+}
+});
+}

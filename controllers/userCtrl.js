@@ -3,6 +3,8 @@ const User = require('../models/User');
 const generateAccessToken = require('../helpers/generateToken').generateAccessToken;
 const generateRefreshToken = require('../helpers/generateToken').generateRefreshToken;
 const jwt = require('jsonwebtoken');
+const mailer = require('./mailCtrl');
+
 
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10)
@@ -12,7 +14,10 @@ exports.signup = (req, res, next) => {
           password: hash
         });
         user.save()
-          .then(() => res.status(201).json({ message: 'user create' }))
+          .then(() => {
+            mailer.welcome(req.body.email)
+            res.status(201).json({ message: 'user create' })
+          })
           .catch(error => res.status(400).json({ error }));
       })
       .catch(error => res.status(500).json({ error }));
