@@ -49,7 +49,25 @@ exports.login = (req, res, next) => {
     .catch(error => res.status(500).json({ error }));
 
 };
-
+exports.forgotPassword = (req, res, next) => {
+  mailer.forgotPassword(req.body.email);
+  res.status(200).json({ message: 'email réinitialisation du mot de passe envoyé' })
+};
+exports.updatePassword = (req, res, next) => {
+  bcrypt.hash(req.body.newPassword, 10)
+  .then(hash => {
+    User.updateOne(
+      { email: req.body.email },
+      { $set: { password: hash } } 
+    )
+    .then(() => {
+      res.status(200).json({ message: 'mot de passe modifié' })
+    })
+    .catch(error => res.status(400).json({ error }));
+  })
+  .catch(error => res.status(500).json({ error }));
+ 
+}
 exports.refreshToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     console.log(authHeader);
