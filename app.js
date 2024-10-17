@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const cronReminder = require('./helpers/cronUserReminder')
 mongoose.set('strictQuery', false);
 
 const users_routes = require('./routes/user');
@@ -29,3 +30,5 @@ app.use('/api/task', task_routes);
 app.get('/api/me', authenticateToken, (req, res) =>{
   res.send(req.user);
 });
+
+cronReminder.reminder()

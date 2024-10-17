@@ -47,3 +47,25 @@ exports.forgotPassword = (email) => {
 }
 });
 }
+
+exports.reminder = (email) => {
+  ejs.renderFile(path.join(__dirname + "/../", "views", "reminder.ejs"), { receiver: email }, function (err, data) {
+    if (err) {
+        console.log(err);
+    } else {
+        var mailOptions = {
+            from: '"Admin" testmail@zoho.com',
+            to: email,
+            subject: 'to do to win rappel',
+            html: data
+        };
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log('Error:', error);
+    } else {
+      console.log('Email sent: ', info.response);
+    }
+  });
+}
+});
+}
