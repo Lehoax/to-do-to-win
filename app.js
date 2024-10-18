@@ -6,6 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const cronReminder = require('./helpers/cronUserReminder')
+const cors = require('cors');
+
+app.use(cors({ origin: 'http://localhost:3000' }));
 mongoose.set('strictQuery', false);
 
 const users_routes = require('./routes/user');
@@ -19,7 +22,7 @@ mongoose.connect('mongodb+srv://'+process.env.DB_ACCESS+':'+process.env.DB_PASSW
   .catch(() => console.log('Connection to MongoDB failed !'));
 
 
-app.listen(3000, () => {console.log('Server running on port 3000');});
+app.listen(3001, () => {console.log('Server running on port 3000');});
 
 
 app.use('/api/user', users_routes);
