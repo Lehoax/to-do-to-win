@@ -9,7 +9,7 @@ router.post('/login', userCtrl.login)
 router.post('/updatePassword', userCtrl.updatePassword);
 router.post('/forgotPassword', userCtrl.forgotPassword);
 router.post('/refreshToken', userCtrl.refreshToken);
-router.get('/profile',userCtrl.profile);
+router.get('/profile',auth,userCtrl.profile);
 router.get('/allUser',userCtrl.allUsers);
 router.delete('/delete', auth ,userCtrl.delete);
 router.put('/update', auth ,userCtrl.update);
