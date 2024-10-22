@@ -105,7 +105,6 @@ exports.updatePassword = async(req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Mettre à jour le mot de passe de l'utilisateur
     user.password = hashedPassword;
     await user.save();
 
@@ -143,23 +142,8 @@ exports.refreshToken = (req, res, next) => {
 };
 
 exports.profile = (req, res, next) => {
- const user = req.user.email;
- 
- User.findOne({ email: user }, 'email')
-        .then(user =>{
-            if (!user) {
-                return res.status(401).json({ message: 'this user does not exist'});
-            }
-            delete user.password;
-            res.send({
-              message: user.email,
-              user: user
-            });
-        })
-};
-exports.myxp = (req, res, next) => {
   const user = req.body.email;
-  User.findOne({ email: user }, 'xp')
+  User.findOne({ email: user }).select('xp reminder')
          .then(user =>{
              if (!user) {
                  return res.status(401).json({ message: 'this user does not exist'});
@@ -183,23 +167,32 @@ exports.allUsers = (req, res, next) => {
          });  
  };
  exports.update = (req, res, next) => {
-  const user = req.body.id;
-  const dataToUpdate = req.body.dataToUpdate;
-  if (!user) {
-    return res.status(400).json({ message: 'no user selected'});
+  const userEmail = req.body.email; 
+  const dataToUpdate = req.body.reminder;
 
+  if (!userEmail) {
+    return res.status(400).json({ message: 'Aucun utilisateur sélectionné.' });
   } 
-  if (!dataToUpdate) {
-    return res.status(400).json({ message: 'no changes to make'});
-
+  if (dataToUpdate === undefined) { 
+    return res.status(400).json({ message: 'Aucun changement à apporter.' });
   } 
-    User.findOneAndUpdate({ _id: user }, dataToUpdate)
-         .then(user =>{
-            return res.status(200).json({ message: 'updated user'});
-         }).catch(err =>{
-            return res.status(500).json({ message: 'an error occured'});
-         });
-  }
+  
+  User.findOneAndUpdate(
+    { email: userEmail },
+    { reminder: dataToUpdate },
+    { new: true }
+  )
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ message: 'Utilisateur non trouvé.' }); 
+      }
+      return res.status(200).json({ message: 'Utilisateur mis à jour.', user }); 
+    })
+    .catch(err => {
+      console.error('Erreur lors de la mise à jour de l\'utilisateur:', err);
+      return res.status(500).json({ message: 'Une erreur est survenue.' });
+    });
+};
   
  
  exports.delete = (req, res, next) => {
