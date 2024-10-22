@@ -6,7 +6,7 @@ const auth = require('../middleware/auth')
 
 router.post('/signup', userCtrl.signup)
 router.post('/login', userCtrl.login)
-router.post('/updatePassword', userCtrl.updatePassword);
+router.post('/resetPassword/:token', userCtrl.updatePassword);
 router.post('/forgotPassword', userCtrl.forgotPassword);
 router.post('/refreshToken', userCtrl.refreshToken);
 router.get('/profile',auth,userCtrl.profile);

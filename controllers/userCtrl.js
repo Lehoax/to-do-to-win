@@ -4,6 +4,8 @@ const generateAccessToken = require('../helpers/generateToken').generateAccessTo
 const generateRefreshToken = require('../helpers/generateToken').generateRefreshToken;
 const jwt = require('jsonwebtoken');
 const mailer = require('./mailCtrl');
+require('dotenv').config();
+
 
 
 exports.signup = (req, res, next) => {
@@ -66,23 +68,52 @@ exports.signup = (req, res, next) => {
       });
   };
   
-exports.forgotPassword = (req, res, next) => {
-  mailer.forgotPassword(req.body.email);
-  res.status(200).json({ message: 'email réinitialisation du mot de passe envoyé' })
+exports.forgotPassword = async(req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    const resetLink = `http://localhost:3000/resetPassword/${resetToken}`;
+
+    const transporter = mailer.forgotPassword(email,  resetLink)
+
+    await transporter
+
+    res.status(200).json({ message: 'Lien de réinitialisation envoyé à votre adresse email.' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Erreur serveur. Veuillez réessayer plus tard.' });
+  }
 };
-exports.updatePassword = (req, res, next) => {
-  bcrypt.hash(req.body.newPassword, 10)
-  .then(hash => {
-    User.updateOne(
-      { email: req.body.email },
-      { $set: { password: hash } } 
-    )
-    .then(() => {
-      res.status(200).json({ message: 'mot de passe modifié' })
-    })
-    .catch(error => res.status(400).json({ error }));
-  })
-  .catch(error => res.status(500).json({ error }));
+exports.updatePassword = async(req, res, next) => {
+  const { password } = req.body;
+  const { token } = req.params;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Mettre à jour le mot de passe de l'utilisateur
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Mot de passe modifié avec succès' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Lien invalide ou expiré' });
+  }
  
 }
 exports.refreshToken = (req, res, next) => {

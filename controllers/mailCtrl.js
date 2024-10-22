@@ -26,8 +26,10 @@ exports.welcome = (email) => {
 });
 }
 
-exports.forgotPassword = (email) => {
-  ejs.renderFile(path.join(__dirname + "/../", "views", "forgotPassword.ejs"), { receiver: email,new_pass_link: "new_pass_link" }, function (err, data) {
+exports.forgotPassword = (email, link) => {
+  console.log(link);
+  
+  ejs.renderFile(path.join(__dirname + "/../", "views", "forgotPassword.ejs"), { receiver: email, new_pass_link: link }, function (err, data) {
     if (err) {
         console.log(err);
     } else {
