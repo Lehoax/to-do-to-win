@@ -146,7 +146,7 @@ exports.refreshToken = (req, res, next) => {
 
 exports.profile = (req, res, next) => {
   const user = req.body.email;
-  User.findOne({ email: user }).select('xp reminder')
+  User.findOne({ email: user }).select('xp reminder friends')
          .then(user =>{
              if (!user) {
                  return res.status(401).json({ message: 'this user does not exist'});
@@ -245,4 +245,57 @@ User.findOne({ email: emailApplicant }).select('email')
               .catch(error => res.status(400).json({ error }));
           })  
       })
+}
+exports.friendRequestReceived = (req, res, next) =>{
+  const emailRecipient = req.body.email;
+  FriendRequest.find({ emailRecipient: emailRecipient })
+  .then(friendRequest =>{
+      if (!friendRequest) {
+          return res.status(401).json({ message: 'this friendRequest does not exist'});
+      }
+      res.send({
+        friendRequest: friendRequest
+      });
+})
+}
+exports.friendRequestAccepted = (req, res, next) =>{
+  const emailApplicant = req.body.emailApplicant;
+  const emailRecipient = req.body.emailRecipient;
+  FriendRequest.findOneAndUpdate(
+  {  emailApplicant: emailApplicant, emailRecipient: emailRecipient },
+  { accepted: true }
+  )
+  .then(friendRequest =>{
+      if (!friendRequest) {
+          return res.status(401).json({ message: 'this friendRequest does not exist'});
+      }
+      User.findOneAndUpdate(
+        { email: emailApplicant },
+        { $push: { friends: emailRecipient } }
+      )
+        .then(user => {
+          if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' }); 
+          }
+          User.findOneAndUpdate(
+            { email:  emailRecipient},
+            { $push: { friends: emailApplicant } }
+          )
+            .then(user => {
+              if (!user) {
+                return res.status(404).json({ message: 'Utilisateur non trouvé.' }); 
+              }
+              res.status(201).json({ message: 'request accepted'});
+            })
+            .catch(err => {
+              return res.status(500).json({ message: 'Une erreur est survenue.' });
+            });
+        })
+        .catch(err => {
+          return res.status(500).json({ message: 'Une erreur est survenue.' });
+        });
+})
+.catch(err => {
+  return res.status(500).json({ message: 'Une erreur est survenue.' });
+});
 }

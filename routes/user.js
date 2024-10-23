@@ -12,6 +12,8 @@ router.post('/refreshToken', userCtrl.refreshToken);
 router.post('/profile',auth,userCtrl.profile);
 router.post('/findUser',auth,userCtrl.findOneUser);
 router.post('/friendRequest',auth,userCtrl.friendRequest);
+router.post('/friendRequestReceived',auth,userCtrl.friendRequestReceived);
+router.post('/friendRequestAccepted',auth,userCtrl.friendRequestAccepted);
 router.get('/allUser',userCtrl.allUsers);
 router.delete('/delete', auth ,userCtrl.delete);
 router.put('/update', auth ,userCtrl.update);
