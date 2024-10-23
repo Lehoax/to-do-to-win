@@ -212,7 +212,7 @@ exports.findOneUser = (req, res, next) =>{
   User.findOne({ email: user }).select('email')
          .then(user =>{
              if (!user) {
-                 return res.status(401).json({ message: 'this user does not exist'});
+                 return res.status(404).json({ message: 'this user does not exist'});
              }
              delete user.password;
              res.send({
