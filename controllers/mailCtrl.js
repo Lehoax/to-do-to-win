@@ -14,7 +14,6 @@ exports.welcome = (email) => {
             subject: 'bienvenue chez to do to win',
             html: data
         };
-  // Send the email
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
       console.log('Error:', error);

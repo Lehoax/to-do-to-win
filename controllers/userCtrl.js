@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const FriendRequest = require('../models/friendRequest')
 const generateAccessToken = require('../helpers/generateToken').generateAccessToken;
 const generateRefreshToken = require('../helpers/generateToken').generateRefreshToken;
 const jwt = require('jsonwebtoken');
@@ -23,50 +24,50 @@ exports.signup = (req, res, next) => {
           .catch(error => res.status(400).json({ error }));
       })
       .catch(error => res.status(500).json({ error }));
-  };
+};
   
-  exports.login = (req, res, next) => {
-    const token = generateAccessToken({ email: req.body.email });
-    const refreshToken = generateRefreshToken({ email: req.body.email });
-  
-    User.findOne({ email: req.body.email })
-      .then(user => {
-        if (!user) {
-          return res.status(401).json({ message: 'incorrect login/password' });
-        }
-  
-        bcrypt.compare(req.body.password, user.password)
-          .then(valid => {
-            if (!valid) {
-              return res.status(401).json({ message: 'incorrect login/password' });
-            }
-  
-            User.updateOne({ email: req.body.email }, { last_connection: Date.now() })
-              .then(() => {
-                res.cookie('refreshToken', refreshToken, {
-                  httpOnly: true,
-                  secure: true,
-                  sameSite: 'Strict',
-                  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours d'expiration
-                });
-  
-                return res.status(200).json({
-                  userId: user._id,
-                  token: token 
-                });
-              })
-              .catch(err => {
-                return res.status(500).json({ error: 'Erreur lors de la mise à jour de la connexion' });
+exports.login = (req, res, next) => {
+  const token = generateAccessToken({ email: req.body.email });
+  const refreshToken = generateRefreshToken({ email: req.body.email });
+
+  User.findOne({ email: req.body.email })
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({ message: 'incorrect login/password' });
+      }
+
+      bcrypt.compare(req.body.password, user.password)
+        .then(valid => {
+          if (!valid) {
+            return res.status(401).json({ message: 'incorrect login/password' });
+          }
+
+          User.updateOne({ email: req.body.email }, { last_connection: Date.now() })
+            .then(() => {
+              res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'Strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours d'expiration
               });
-          })
-          .catch(error => {
-            return res.status(500).json({ error });
-          });
-      })
-      .catch(error => {
-        return res.status(500).json({ error });
-      });
-  };
+
+              return res.status(200).json({
+                userId: user._id,
+                token: token 
+              });
+            })
+            .catch(err => {
+              return res.status(500).json({ error: 'Erreur lors de la mise à jour de la connexion' });
+            });
+        })
+        .catch(error => {
+          return res.status(500).json({ error });
+        });
+    })
+    .catch(error => {
+      return res.status(500).json({ error });
+    });
+};
   
 exports.forgotPassword = async(req, res, next) => {
   const { email } = req.body;
@@ -92,6 +93,7 @@ exports.forgotPassword = async(req, res, next) => {
     res.status(500).json({ error: 'Erreur serveur. Veuillez réessayer plus tard.' });
   }
 };
+
 exports.updatePassword = async(req, res, next) => {
   const { password } = req.body;
   const { token } = req.params;
@@ -115,6 +117,7 @@ exports.updatePassword = async(req, res, next) => {
   }
  
 }
+
 exports.refreshToken = (req, res, next) => {
   const token = req.cookies.refreshToken;  
   if (!token) {
@@ -152,8 +155,8 @@ exports.profile = (req, res, next) => {
              res.send({
                user: user
              });
-         })
- };
+        })
+};
  
 exports.allUsers = (req, res, next) => {
   User.find({ }, '_id email')
@@ -165,7 +168,7 @@ exports.allUsers = (req, res, next) => {
                users: users
               });
          });  
- };
+};
  exports.update = (req, res, next) => {
   const userEmail = req.body.email; 
   const dataToUpdate = req.body.reminder;
@@ -193,8 +196,7 @@ exports.allUsers = (req, res, next) => {
       return res.status(500).json({ message: 'Une erreur est survenue.' });
     });
 };
-  
- 
+
  exports.delete = (req, res, next) => {
   const user = req.body.id;
   User.deleteOne({ _id: user })
@@ -203,5 +205,44 @@ exports.allUsers = (req, res, next) => {
          }).catch(err =>{
             return res.status(500).json({ message: 'an error occured'});
          });
- };
- 
+};
+
+exports.findOneUser = (req, res, next) =>{
+  const user = req.body.email;
+  User.findOne({ email: user }).select('email')
+         .then(user =>{
+             if (!user) {
+                 return res.status(401).json({ message: 'this user does not exist'});
+             }
+             delete user.password;
+             res.send({
+               user: user
+             });
+    })
+}
+exports.friendRequest = (req, res, next) =>{
+const emailApplicant = req.body.emailApplicant;
+const emailRecipient = req.body.emailRecipient;
+
+User.findOne({ email: emailApplicant }).select('email')
+      .then(userApplicant =>{
+          if (!userApplicant) {
+              return res.status(401).json({ message: 'this user does not exist'});
+          }
+          User.findOne({ email: emailRecipient }).select('email')
+          .then(userRecipient =>{
+              if (!userRecipient) {
+                  return res.status(401).json({ message: 'this user does not exist'});
+              }
+              const friendRequest = new FriendRequest({
+                emailApplicant: userApplicant.email,
+                emailRecipient: userRecipient.email
+              });
+              friendRequest.save()
+              .then(() => {
+                res.status(201).json({ message: 'friendRequest table create' })
+              })
+              .catch(error => res.status(400).json({ error }));
+          })  
+      })
+}

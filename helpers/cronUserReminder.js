@@ -5,7 +5,7 @@ const User = require('../models/User');
 
 exports.reminder = () => {
 // Tâche planifiée pour s'exécuter toutes les 24 heures
-cron.schedule('05 18 * * *', () => {  // Exécute tous les jours à midi
+cron.schedule('00 12 * * *', () => {  // Exécute tous les jours à midi
 
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); 
     
