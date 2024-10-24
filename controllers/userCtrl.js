@@ -145,18 +145,30 @@ exports.refreshToken = (req, res, next) => {
 };
 
 exports.profile = (req, res, next) => {
-  const user = req.body.email;
-  User.findOne({ email: user }).select('xp reminder friends')
-         .then(user =>{
-             if (!user) {
-                 return res.status(401).json({ message: 'this user does not exist'});
-             }
-             delete user.password;
-             res.send({
-               user: user
-             });
-        })
+  const userEmail = req.body.email;
+  User.findOne({ email: userEmail }).select('xp reminder friends task')
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({ message: 'Cet utilisateur n\'existe pas' });
+      }
+      const incompleteTasks = user.task.filter(task => task.done === false);
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password;
+      res.json({
+        user: {
+          xp: user.xp,
+          reminder: user.reminder,
+          friends: user.friends,
+          task: incompleteTasks 
+        }
+      });
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).json({ message: 'Erreur interne du serveur' });
+    });
 };
+
  
 exports.allUsers = (req, res, next) => {
   User.find({ }, '_id email')
