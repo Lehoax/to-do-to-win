@@ -232,32 +232,46 @@ exports.findOneUser = (req, res, next) =>{
              });
     })
 }
-exports.friendRequest = (req, res, next) =>{
-const emailApplicant = req.body.emailApplicant;
-const emailRecipient = req.body.emailRecipient;
+exports.friendRequest = (req, res, next) => {
+  const emailApplicant = req.body.emailApplicant;
+  const emailRecipient = req.body.emailRecipient;
 
-User.findOne({ email: emailApplicant }).select('email')
-      .then(userApplicant =>{
-          if (!userApplicant) {
-              return res.status(401).json({ message: 'this user does not exist'});
+  User.findOne({ email: emailApplicant }).select('email')
+    .then(userApplicant => {
+      if (!userApplicant) {
+        return res.status(500).json({ message: 'This user does not exist' });
+      }
+      User.findOne({ email: emailRecipient }).select('email')
+        .then(userRecipient => {
+          if (!userRecipient) {
+            return res.status(501).json({ message: 'This user does not exist' });
           }
-          User.findOne({ email: emailRecipient }).select('email')
-          .then(userRecipient =>{
-              if (!userRecipient) {
-                  return res.status(401).json({ message: 'this user does not exist'});
-              }
-              const friendRequest = new FriendRequest({
-                emailApplicant: userApplicant.email,
-                emailRecipient: userRecipient.email
-              });
-              friendRequest.save()
+          FriendRequest.findOne({
+            emailApplicant: userApplicant.email,
+            emailRecipient: userRecipient.email
+          })
+          .then(existingRequest => {
+            if (existingRequest) {
+              return res.status(409).json({ message: 'Friend request already sent' });
+            }
+            const friendRequest = new FriendRequest({
+              emailApplicant: userApplicant.email,
+              emailRecipient: userRecipient.email
+            });
+            friendRequest.save()
               .then(() => {
-                res.status(201).json({ message: 'friendRequest table create' })
+                res.status(201).json({ message: 'Friend request created' });
               })
               .catch(error => res.status(400).json({ error }));
-          })  
-      })
-}
+          })
+          .catch(error => res.status(500).json({ error }));
+        })
+        .catch(error => res.status(500).json({ error }));
+    })
+    .catch(error => res.status(500).json({ error }));
+};
+
+
 exports.friendRequestReceived = (req, res, next) =>{
   const emailRecipient = req.body.email;
   FriendRequest.find({ emailRecipient: emailRecipient })
