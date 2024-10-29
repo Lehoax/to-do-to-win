@@ -53,7 +53,8 @@ exports.login = (req, res, next) => {
 
               return res.status(200).json({
                 userId: user._id,
-                token: token 
+                token: token,
+                email: user.email
               });
             })
             .catch(err => {
