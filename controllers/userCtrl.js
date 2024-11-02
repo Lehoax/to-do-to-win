@@ -275,7 +275,7 @@ exports.friendRequest = (req, res, next) => {
 
 exports.friendRequestReceived = (req, res, next) =>{
   const emailRecipient = req.body.email;
-  FriendRequest.find({ emailRecipient: emailRecipient })
+  FriendRequest.find({ emailRecipient: emailRecipient, accepted: false })
   .then(friendRequest =>{
       if (!friendRequest) {
           return res.status(401).json({ message: 'this friendRequest does not exist'});

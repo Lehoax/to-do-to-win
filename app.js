@@ -21,6 +21,7 @@ mongoose.set('strictQuery', false);
 
 const users_routes = require('./routes/user');
 const task_routes = require('./routes/task');
+const group_routes = require('./routes/group');
 const authenticateToken = require('./middleware/auth');
 
 mongoose.connect('mongodb+srv://'+process.env.DB_ACCESS+':'+process.env.DB_PASSWORD+'@cluster0.aoxy6.mongodb.net/?retryWrites=true&w=majority',
@@ -35,7 +36,7 @@ app.listen(3001, () => {console.log('Server running on port 3000');});
 
 app.use('/api/user', users_routes);
 app.use('/api/task', task_routes);
-
+app.use('/api/group', group_routes);
 
 
 app.get('/api/me', authenticateToken, (req, res) =>{

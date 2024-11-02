@@ -8,7 +8,9 @@ const userSchema = mongoose.Schema({
   last_connection: { type: Date, default: Date.now, required: true },
   reminder: { type: Boolean, default: false },
   task: { type: Array },
-  friends: { type: Array }
+  friends: { type: Array },
+  groups: { type: Array }
+
 });
 
 userSchema.plugin(uniqueValidator);
