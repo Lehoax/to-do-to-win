@@ -62,3 +62,23 @@ exports.deleteGroup = (req, res, next) => {
         });
 
 }
+
+exports.addMember = async (req, res, next) => {
+    try {
+        const { groupId, newMember } = req.body;
+
+        const updatedGroup = await Group.findOneAndUpdate(
+            { _id: groupId },
+            { "$push": { members: [newMember] } },
+            { new: true }
+        );
+
+        if (!updatedGroup) {
+            return res.status(404).json({ message: 'Groupe non trouvé' });
+        }
+
+        return res.status(201).json({ message: "Membre ajouté avec success", group: updatedGroup });
+    } catch (error) {
+        return res.status(400).json({ message: "Erreur lors de l'ajout du membre", error: error.message });
+    }
+};
